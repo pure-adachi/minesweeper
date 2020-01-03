@@ -4,11 +4,19 @@
   "private": true,
   "homepage": "http://pure-adachi.github.io/minesweeper",
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.26",
+    "@fortawesome/free-solid-svg-icons": "^5.12.0",
+    "@fortawesome/react-fontawesome": "^0.1.8",
+    "@types/classnames": "^2.2.9",
+    "@types/flat": "^0.0.28",
     "@types/node": "^13.1.2",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
+    "classnames": "^2.2.6",
+    "flat": "^5.0.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
+    "react-intl": "^3.9.3",
     "react-scripts": "3.3.0",
     "typescript": "^3.7.4"
   },
@@ -35,6 +43,7 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^2.1.1"
+    "gh-pages": "^2.1.1",
+    "node-sass": "^4.13.0"
   }
 }
