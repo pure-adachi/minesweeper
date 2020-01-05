@@ -1,0 +1,44 @@
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.board {
+  display: inline-block;
+
+  .row {
+    display: flex;
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 25px;
+      min-width: 25px;
+      height: 25px;
+      background-color: #d3d3d3;
+      border: 4px outset white;
+
+      &.close:hover {
+        background-color: skyblue;
+      }
+
+      &.open {
+        border: 1px solid #a9a9a9;
+        width: 31px;
+        min-width: 31px;
+        height: 31px;
+
+        &.bomb {
+          background-color: red;
+        }
+      }
+
+      &:not(.open) {
+        cursor: pointer;
+      }
+    }
+  }
+}

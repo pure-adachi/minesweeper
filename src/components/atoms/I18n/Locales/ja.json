@@ -1,0 +1,17 @@
+{
+  "pages": {
+    "Top": {
+      "title": "マインスイーパー",
+      "mode": {
+        "easy": "簡単",
+        "normal": "普通",
+        "hard": "難しい"
+      }
+    }
+  },
+  "templates": {
+    "Board": {
+      "reset": "リセット"
+    }
+  }
+}
