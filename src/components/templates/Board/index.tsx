@@ -1,23 +1,27 @@
-import { faBomb, faFlag, faQuestion } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ModeInfoType } from "../../../constraints/Modes";
+import { cellLabel, nextState, setBombCount, shuffle } from "./Module";
 
 interface IProps {
   modeInfo: ModeInfoType;
 }
 
-type CellStates = "close" | "flag" | "onHold" | "open";
+export type CellStates = "close" | "flag" | "onHold" | "open";
 
-type CellType = {
+export type CellType = {
   state: CellStates;
   bomb: boolean;
   value: number;
 };
 
-const initialCell: CellType = {
+export type StartPositionType = {
+  i: number;
+  j: number;
+};
+
+export const initialCell: CellType = {
   state: "close",
   bomb: false,
   value: 0
@@ -27,6 +31,8 @@ const Board = ({ modeInfo }: IProps) => {
   const [boardSurfaces, setBoardSurfaces] = useState();
   const [startPosition, setStartPosition] = useState();
   const [started, setStarted] = useState(false);
+
+  // console.log(startPosition, started);
 
   const initialBoard = useCallback(() => {
     const { x, y }: ModeInfoType = modeInfo;
@@ -39,17 +45,15 @@ const Board = ({ modeInfo }: IProps) => {
     }
 
     setBoardSurfaces(array);
-    setStartPosition(null);
     setStarted(false);
+    setStartPosition(null);
   }, [modeInfo]);
 
   useEffect(() => {
     initialBoard();
-  }, [modeInfo, initialBoard]);
+  }, [initialBoard]);
 
   const setBoardItems = useCallback(() => {
-    console.log("初回選択場所", startPosition, "爆弾、数字の配置開始");
-
     const { x, y, bomb }: ModeInfoType = modeInfo;
 
     let cells: CellType[] = [
@@ -57,29 +61,16 @@ const Board = ({ modeInfo }: IProps) => {
       ...Array(x * y - bomb - 1).fill(initialCell) // 初回選択マスは爆弾無しとする為に-1
     ];
 
-    let array: CellType[] = [];
+    let array: CellType[] = shuffle(cells, { ...startPosition });
     let newArray: CellType[][] = [];
-
-    // ダステンフェルドの手法(フィッシャー–イェーツのシャッフルの改良版)でシャッフル
-    while (cells.length > 0) {
-      const n = cells.length;
-      const k = Math.floor(Math.random() * n);
-
-      if ((startPosition.i + 1) * (startPosition.j + 1) === array.length + 1) {
-        array.push(initialCell);
-      }
-
-      array.push(cells[k]);
-      cells[k] = cells[n - 1];
-      cells = cells.slice(0, n - 1);
-    }
 
     for (let i = 0; i < array.length; i += x) {
       newArray.push(array.slice(i, i + x));
     }
 
-    setBoardSurfaces(newArray);
-  }, [modeInfo, startPosition]);
+    setBoardSurfaces(setBombCount(newArray));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startPosition]);
 
   useEffect(() => {
     if (startPosition) {
@@ -114,7 +105,7 @@ const Board = ({ modeInfo }: IProps) => {
   );
 
   useEffect(() => {
-    if (started) {
+    if (started && startPosition) {
       openCell(startPosition.i, startPosition.j);
     }
   }, [started, openCell, startPosition]);
@@ -127,40 +118,6 @@ const Board = ({ modeInfo }: IProps) => {
     e.preventDefault();
 
     updateCell(i, j, nextState(boardSurfaces[i][j].state));
-  };
-
-  const nextState = (state: CellStates) => {
-    switch (state) {
-      case "close":
-        return "flag";
-      case "flag":
-        return "onHold";
-      case "onHold":
-        return "close";
-      case "open":
-        return state;
-    }
-  };
-
-  const cellLabel = (cell: CellType) => {
-    switch (cell.state) {
-      case "close":
-        return;
-      case "flag":
-        return <FontAwesomeIcon icon={faFlag} />;
-      case "onHold":
-        return <FontAwesomeIcon icon={faQuestion} />;
-      case "open":
-        if (cell.bomb) {
-          return <FontAwesomeIcon icon={faBomb} />;
-        } else {
-          if (cell.value === 0) {
-            return;
-          } else {
-            return cell.value;
-          }
-        }
-    }
   };
 
   return (
