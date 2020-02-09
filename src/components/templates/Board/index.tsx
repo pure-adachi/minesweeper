@@ -19,33 +19,19 @@ type CellType = {
 
 const Board = ({ modeInfo }: IProps) => {
   const [boardSurfaces, setBoardSurfaces] = useState();
+  const [startPosition, setStartPosition] = useState();
   const [started, setStarted] = useState(false);
 
-  const shuffle = (cells: CellType[]) => {
-    const array = [...cells];
-
-    for (let i = array.length - 1; i >= 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-
-    return array;
-  };
-
   const initialBoard = useCallback(() => {
-    const { x, y, bomb }: ModeInfoType = modeInfo;
+    const { x, y }: ModeInfoType = modeInfo;
     const initialCell: CellType = {
       state: "close",
       bomb: false,
       value: 0
     };
 
-    let cells: CellType[] = [
-      ...Array(bomb).fill({ ...initialCell, bomb: true }),
-      ...Array(x * y - bomb).fill(initialCell)
-    ];
+    let cells: CellType[] = Array(x * y).fill(initialCell);
 
-    cells = shuffle(cells);
     let array: CellType[][] = [];
 
     for (let i = 0; i < cells.length; i += x) {
@@ -53,6 +39,7 @@ const Board = ({ modeInfo }: IProps) => {
     }
 
     setBoardSurfaces(array);
+    setStartPosition(null);
     setStarted(false);
   }, [modeInfo]);
 
@@ -60,48 +47,51 @@ const Board = ({ modeInfo }: IProps) => {
     initialBoard();
   }, [modeInfo, initialBoard]);
 
+  const setBoardItems = useCallback(() => {
+    console.log("初回選択場所", startPosition, "爆弾、数字の配置開始");
+  }, [startPosition]);
+
+  useEffect(() => {
+    if (startPosition) {
+      setBoardItems();
+      setStarted(true);
+    }
+  }, [startPosition, setBoardItems]);
+
+  const updateCell = useCallback(
+    (i: number, j: number, state: CellStates) => {
+      let board = [...boardSurfaces];
+      let row = [...board[i]];
+      row[j] = { ...board[i][j], state };
+      board[i] = row;
+
+      setBoardSurfaces(board);
+    },
+    [boardSurfaces]
+  );
+
+  const openCell = useCallback(
+    (i: number, j: number) => {
+      if (startPosition) {
+        if (boardSurfaces[i][j].state === "close") {
+          updateCell(i, j, "open");
+        }
+      } else {
+        setStartPosition({ i, j });
+      }
+    },
+    [boardSurfaces, startPosition, updateCell]
+  );
+
+  useEffect(() => {
+    if (started) {
+      openCell(startPosition.i, startPosition.j);
+    }
+  }, [started, openCell, startPosition]);
+
   if (!boardSurfaces) {
     return <></>;
   }
-
-  const openCell = (i: number, j: number) => {
-    if (started) {
-      updateCell(i, j, "open");
-    } else {
-      exchangeFirstSelectedBombCell(i, j);
-      setStarted(true);
-    }
-  };
-
-  const exchangeFirstSelectedBombCell = (x: number, y: number) => {
-    if (boardSurfaces[x][y].bomb) {
-      for (let i = 0; i < boardSurfaces.length; i++) {
-        const safeCellIndex: number = boardSurfaces[i].findIndex(
-          ({ bomb }: CellType) => !bomb
-        );
-
-        if (safeCellIndex > -1) {
-          const array = [...boardSurfaces];
-
-          array[x][y] = {
-            ...array[x][y],
-            state: "open",
-            bomb: false
-          };
-
-          array[i][safeCellIndex] = {
-            ...array[i][safeCellIndex],
-            bomb: true
-          };
-
-          setBoardSurfaces(array);
-
-          return;
-        }
-      }
-    }
-    updateCell(x, y, "open");
-  };
 
   const changeCell = (e: React.MouseEvent, i: number, j: number) => {
     e.preventDefault();
@@ -120,15 +110,6 @@ const Board = ({ modeInfo }: IProps) => {
       case "open":
         return state;
     }
-  };
-
-  const updateCell = (i: number, j: number, state: CellStates) => {
-    let board = [...boardSurfaces];
-    let row = [...board[i]];
-    row[j] = { ...board[i][j], state };
-    board[i] = row;
-
-    setBoardSurfaces(board);
   };
 
   const cellLabel = (cell: CellType) => {
