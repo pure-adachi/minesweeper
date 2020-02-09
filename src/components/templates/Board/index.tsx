@@ -17,6 +17,12 @@ type CellType = {
   value: number;
 };
 
+const initialCell: CellType = {
+  state: "close",
+  bomb: false,
+  value: 0
+};
+
 const Board = ({ modeInfo }: IProps) => {
   const [boardSurfaces, setBoardSurfaces] = useState();
   const [startPosition, setStartPosition] = useState();
@@ -24,14 +30,8 @@ const Board = ({ modeInfo }: IProps) => {
 
   const initialBoard = useCallback(() => {
     const { x, y }: ModeInfoType = modeInfo;
-    const initialCell: CellType = {
-      state: "close",
-      bomb: false,
-      value: 0
-    };
 
     let cells: CellType[] = Array(x * y).fill(initialCell);
-
     let array: CellType[][] = [];
 
     for (let i = 0; i < cells.length; i += x) {
@@ -49,7 +49,37 @@ const Board = ({ modeInfo }: IProps) => {
 
   const setBoardItems = useCallback(() => {
     console.log("初回選択場所", startPosition, "爆弾、数字の配置開始");
-  }, [startPosition]);
+
+    const { x, y, bomb }: ModeInfoType = modeInfo;
+
+    let cells: CellType[] = [
+      ...Array(bomb).fill({ ...initialCell, bomb: true }),
+      ...Array(x * y - bomb - 1).fill(initialCell) // 初回選択マスは爆弾無しとする為に-1
+    ];
+
+    let array: CellType[] = [];
+    let newArray: CellType[][] = [];
+
+    // ダステンフェルドの手法(フィッシャー–イェーツのシャッフルの改良版)でシャッフル
+    while (cells.length > 0) {
+      const n = cells.length;
+      const k = Math.floor(Math.random() * n);
+
+      if ((startPosition.i + 1) * (startPosition.j + 1) === array.length + 1) {
+        array.push(initialCell);
+      }
+
+      array.push(cells[k]);
+      cells[k] = cells[n - 1];
+      cells = cells.slice(0, n - 1);
+    }
+
+    for (let i = 0; i < array.length; i += x) {
+      newArray.push(array.slice(i, i + x));
+    }
+
+    setBoardSurfaces(newArray);
+  }, [modeInfo, startPosition]);
 
   useEffect(() => {
     if (startPosition) {
