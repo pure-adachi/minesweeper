@@ -7,8 +7,16 @@ import {
   initialCell,
   StartPositionType
 } from "../../Board";
+import { ModeInfoType } from "../../../../constraints/Modes";
 
-export const shuffle = (cells: CellType[], { i, j }: StartPositionType) => {
+interface IShuffleProps extends StartPositionType {
+  modeInfo: ModeInfoType;
+}
+
+export const shuffle = (
+  cells: CellType[],
+  { i, j, modeInfo: { x, y } }: IShuffleProps
+) => {
   let array: CellType[] = [];
 
   // ダステンフェルドの手法(フィッシャー–イェーツのシャッフルの改良版)でシャッフル
@@ -16,13 +24,19 @@ export const shuffle = (cells: CellType[], { i, j }: StartPositionType) => {
     const n = cells.length;
     const k = Math.floor(Math.random() * n);
 
-    if ((i + 1) * (j + 1) === array.length + 1) {
+    // 一番最初に選択したマスには爆弾を配置しない為の対策
+    if (i * x + j + 1 === array.length + 1) {
       array.push(initialCell);
     }
 
     array.push(cells[k]);
     cells[k] = cells[n - 1];
     cells = cells.slice(0, n - 1);
+  }
+
+  // 一番右下のマスを選択された場合の対策
+  if (x * y > array.length) {
+    array.push(initialCell);
   }
 
   return array;
@@ -125,3 +139,31 @@ export const nextState = (state: CellStates) => {
       return state;
   }
 };
+
+export const openedBombCells = (boardSurfaces: CellType[][]) =>
+  boardSurfaces.map(cells =>
+    cells.map(cell => {
+      if (cell.bomb) {
+        return {
+          ...cell,
+          state: "open"
+        };
+      } else {
+        return cell;
+      }
+    })
+  );
+
+export const changedBombCellsToFlag = (boardSurfaces: CellType[][]) =>
+  boardSurfaces.map(cells =>
+    cells.map(cell => {
+      if (cell.bomb) {
+        return {
+          ...cell,
+          state: "flag"
+        };
+      } else {
+        return cell;
+      }
+    })
+  );
