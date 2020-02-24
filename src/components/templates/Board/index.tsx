@@ -2,7 +2,14 @@ import classNames from "classnames";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { ModeInfoType } from "../../../constraints/Modes";
-import { cellLabel, nextState, setBombCount, shuffle } from "./Module";
+import {
+  cellLabel,
+  nextState,
+  setBombCount,
+  shuffle,
+  openedBombCells,
+  changedBombCellsToFlag
+} from "./Module";
 
 interface IProps {
   modeInfo: ModeInfoType;
@@ -29,10 +36,10 @@ export const initialCell: CellType = {
 
 const Board = ({ modeInfo }: IProps) => {
   const [boardSurfaces, setBoardSurfaces] = useState();
-  const [startPosition, setStartPosition] = useState();
   const [started, setStarted] = useState(false);
-
-  // console.log(startPosition, started);
+  const [startPosition, setStartPosition] = useState();
+  const [currentPosition, setCurrentPosition] = useState();
+  const [gameStatus, setGameStatus] = useState();
 
   const initialBoard = useCallback(() => {
     const { x, y }: ModeInfoType = modeInfo;
@@ -47,6 +54,8 @@ const Board = ({ modeInfo }: IProps) => {
     setBoardSurfaces(array);
     setStarted(false);
     setStartPosition(null);
+    setCurrentPosition(null);
+    setGameStatus(null);
   }, [modeInfo]);
 
   useEffect(() => {
@@ -61,13 +70,12 @@ const Board = ({ modeInfo }: IProps) => {
       ...Array(x * y - bomb - 1).fill(initialCell) // 初回選択マスは爆弾無しとする為に-1
     ];
 
-    let array: CellType[] = shuffle(cells, { ...startPosition });
+    let array: CellType[] = shuffle(cells, { ...startPosition, modeInfo });
     let newArray: CellType[][] = [];
 
     for (let i = 0; i < array.length; i += x) {
       newArray.push(array.slice(i, i + x));
     }
-
     setBoardSurfaces(setBombCount(newArray));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startPosition]);
@@ -78,6 +86,38 @@ const Board = ({ modeInfo }: IProps) => {
       setStarted(true);
     }
   }, [startPosition, setBoardItems]);
+
+  useEffect(() => {
+    if (currentPosition) {
+      const { i, j } = currentPosition;
+      const { bomb } = boardSurfaces[i][j];
+      if (bomb) {
+        setGameStatus("lose");
+      } else {
+        const closeSafeCellRows = boardSurfaces.filter((cells: CellType[]) => {
+          const safeCellsRows = cells.filter(
+            cell => !cell.bomb && cell.state === "close"
+          );
+          return safeCellsRows.length > 0;
+        });
+        if (closeSafeCellRows.length === 0) {
+          setGameStatus("win");
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPosition]);
+
+  useEffect(() => {
+    switch (gameStatus) {
+      case "lose":
+        setBoardSurfaces(openedBombCells(boardSurfaces));
+        break;
+      case "win":
+        setBoardSurfaces(changedBombCellsToFlag(boardSurfaces));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameStatus]);
 
   const updateCell = useCallback(
     (i: number, j: number, state: CellStates) => {
@@ -93,15 +133,19 @@ const Board = ({ modeInfo }: IProps) => {
 
   const openCell = useCallback(
     (i: number, j: number) => {
-      if (startPosition) {
-        if (boardSurfaces[i][j].state === "close") {
-          updateCell(i, j, "open");
+      if (!gameStatus) {
+        if (startPosition) {
+          if (boardSurfaces[i][j].state === "close") {
+            updateCell(i, j, "open");
+            setCurrentPosition({ i, j });
+          }
+        } else {
+          setStartPosition({ i, j });
+          setCurrentPosition({ i, j });
         }
-      } else {
-        setStartPosition({ i, j });
       }
     },
-    [boardSurfaces, startPosition, updateCell]
+    [boardSurfaces, startPosition, updateCell, gameStatus]
   );
 
   useEffect(() => {
@@ -117,11 +161,18 @@ const Board = ({ modeInfo }: IProps) => {
   const changeCell = (e: React.MouseEvent, i: number, j: number) => {
     e.preventDefault();
 
-    updateCell(i, j, nextState(boardSurfaces[i][j].state));
+    if (startPosition && !gameStatus) {
+      updateCell(i, j, nextState(boardSurfaces[i][j].state));
+    }
   };
 
   return (
     <>
+      <div>
+        {gameStatus && (
+          <FormattedMessage id={`templates.Board.${gameStatus}`} />
+        )}
+      </div>
       <div className="buttons">
         <button onClick={() => initialBoard()}>
           <FormattedMessage id="templates.Board.reset" />
