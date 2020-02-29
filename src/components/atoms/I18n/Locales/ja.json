@@ -11,7 +11,9 @@
   },
   "templates": {
     "Board": {
-      "reset": "リセット"
+      "reset": "リセット",
+      "lose": "敗北",
+      "win": "勝利"
     }
   }
 }
