@@ -8,7 +8,8 @@ import {
   setBombCount,
   shuffle,
   openedBombCells,
-  changedBombCellsToFlag
+  changedBombCellsToFlag,
+  openAroundSafeCells
 } from "./Module";
 
 interface IProps {
@@ -23,7 +24,7 @@ export type CellType = {
   value: number;
 };
 
-export type StartPositionType = {
+export type PositionType = {
   i: number;
   j: number;
 };
@@ -90,7 +91,7 @@ const Board = ({ modeInfo }: IProps) => {
   useEffect(() => {
     if (currentPosition) {
       const { i, j } = currentPosition;
-      const { bomb } = boardSurfaces[i][j];
+      const { bomb, state, value } = boardSurfaces[i][j];
       if (bomb) {
         setGameStatus("lose");
       } else {
@@ -102,6 +103,8 @@ const Board = ({ modeInfo }: IProps) => {
         });
         if (closeSafeCellRows.length === 0) {
           setGameStatus("win");
+        } else if (value === 0 && state === "open") {
+          setBoardSurfaces(openAroundSafeCells(boardSurfaces, currentPosition));
         }
       }
     }
