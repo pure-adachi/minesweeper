@@ -1,15 +1,10 @@
 import { faBomb, faFlag, faQuestion } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import {
-  CellType,
-  CellStates,
-  initialCell,
-  StartPositionType
-} from "../../Board";
+import { CellType, CellStates, initialCell, PositionType } from "../../Board";
 import { ModeInfoType } from "../../../../constraints/Modes";
 
-interface IShuffleProps extends StartPositionType {
+interface IShuffleProps extends PositionType {
   modeInfo: ModeInfoType;
 }
 
@@ -167,3 +162,106 @@ export const changedBombCellsToFlag = (boardSurfaces: CellType[][]) =>
       }
     })
   );
+
+export const openAroundSafeCells = (
+  boardSurfaces: CellType[][],
+  currentPosition: PositionType
+) => {
+  const { i, j } = currentPosition;
+  const { state, value } = boardSurfaces[i][j];
+  let newBoardSurfaces: CellType[][] = [...boardSurfaces];
+
+  // 最初は既に空いてる
+  if (state === "close") {
+    newBoardSurfaces[i][j].state = "open";
+  }
+
+  // 爆弾のある手前まで来たら再帰処理終了
+  if (value !== 0) {
+    return newBoardSurfaces;
+  }
+
+  // 上下：i
+  // 左右：j
+
+  // 左上
+  if (
+    j - 1 >= 0 &&
+    i - 1 >= 0 &&
+    newBoardSurfaces[i - 1][j - 1].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i - 1,
+      j: j - 1
+    });
+  }
+  // 上
+  if (i - 1 >= 0 && newBoardSurfaces[i - 1][j].state === "close") {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i - 1,
+      j
+    });
+  }
+  // 右上
+  if (
+    j + 1 < newBoardSurfaces[i].length &&
+    i - 1 >= 0 &&
+    newBoardSurfaces[i - 1][j + 1].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i - 1,
+      j: j + 1
+    });
+  }
+  // 右
+  if (
+    j + 1 < newBoardSurfaces[i].length &&
+    newBoardSurfaces[i][j + 1].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i,
+      j: j + 1
+    });
+  }
+  // 右下
+  if (
+    j + 1 < newBoardSurfaces[i].length &&
+    i + 1 < newBoardSurfaces.length &&
+    newBoardSurfaces[i + 1][j + 1].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i + 1,
+      j: j + 1
+    });
+  }
+  // 下
+  if (
+    i + 1 < newBoardSurfaces.length &&
+    newBoardSurfaces[i + 1][j].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i + 1,
+      j
+    });
+  }
+  // 左下
+  if (
+    j - 1 >= 0 &&
+    i + 1 < newBoardSurfaces.length &&
+    newBoardSurfaces[i + 1][j - 1].state === "close"
+  ) {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i: i + 1,
+      j: j - 1
+    });
+  }
+  // 左
+  if (j - 1 >= 0 && newBoardSurfaces[i][j - 1].state === "close") {
+    newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
+      i,
+      j: j - 1
+    });
+  }
+
+  return newBoardSurfaces;
+};
