@@ -11,6 +11,7 @@ import {
   changedBombCellsToFlag,
   openAroundSafeCells
 } from "./Module";
+import Time from "../../atoms/Time";
 
 interface IProps {
   modeInfo: ModeInfoType;
@@ -41,6 +42,8 @@ const Board = ({ modeInfo }: IProps) => {
   const [startPosition, setStartPosition] = useState();
   const [currentPosition, setCurrentPosition] = useState();
   const [gameStatus, setGameStatus] = useState();
+  const [startUnixTime, setStartUnixTime] = useState();
+  const [finishedUnixTime, setFinishedUnixTime] = useState();
 
   const initialBoard = useCallback(() => {
     const { x, y }: ModeInfoType = modeInfo;
@@ -57,6 +60,8 @@ const Board = ({ modeInfo }: IProps) => {
     setStartPosition(null);
     setCurrentPosition(null);
     setGameStatus(null);
+    setStartUnixTime(null);
+    setFinishedUnixTime(null);
   }, [modeInfo]);
 
   useEffect(() => {
@@ -78,6 +83,7 @@ const Board = ({ modeInfo }: IProps) => {
       newArray.push(array.slice(i, i + x));
     }
     setBoardSurfaces(setBombCount(newArray));
+    setStartUnixTime(Math.floor(new Date().getTime() / 1000));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startPosition]);
 
@@ -112,12 +118,17 @@ const Board = ({ modeInfo }: IProps) => {
   }, [currentPosition]);
 
   useEffect(() => {
-    switch (gameStatus) {
-      case "lose":
-        setBoardSurfaces(openedBombCells(boardSurfaces));
-        break;
-      case "win":
-        setBoardSurfaces(changedBombCellsToFlag(boardSurfaces));
+    if (gameStatus) {
+      switch (gameStatus) {
+        case "lose":
+          setBoardSurfaces(openedBombCells(boardSurfaces));
+          break;
+        case "win":
+          setBoardSurfaces(changedBombCellsToFlag(boardSurfaces));
+          break;
+      }
+
+      setFinishedUnixTime(Math.floor(new Date().getTime() / 1000));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameStatus]);
@@ -176,6 +187,7 @@ const Board = ({ modeInfo }: IProps) => {
           <FormattedMessage id={`templates.Board.${gameStatus}`} />
         )}
       </div>
+      <Time startUnixTime={startUnixTime} finishedUnixTime={finishedUnixTime} />
       <div className="buttons">
         <button onClick={() => initialBoard()}>
           <FormattedMessage id="templates.Board.reset" />
