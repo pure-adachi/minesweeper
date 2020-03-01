@@ -7,37 +7,116 @@
 
 .board {
   display: inline-block;
+  margin: 0 auto;
+  padding: 10px;
+  border: 5px outset white;
+  background-color: #c0c0c0;
 
-  .row {
+  .game-info {
     display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border: 5px inset white;
+    margin-bottom: 13px;
 
-    .cell {
+    .bomb-count-info,
+    .time-info {
+      width: 72px;
+      height: 44px;
+      border: 2px inset #f1f1f1;
+      background-color: black;
+      display: flex;
+      align-items: center;
+    }
+
+    .reset-button {
+      background-color: silver;
+      box-sizing: border-box;
+      width: 48px;
+      height: 48px;
+      border: 5px outset white;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 25px;
-      min-width: 25px;
-      height: 25px;
-      background-color: #d3d3d3;
-      border: 4px outset white;
+      cursor: pointer;
 
-      &.close:hover {
-        background-color: skyblue;
+      &:active {
+        border-style: inset;
       }
 
-      &.open {
-        border: 1px solid #a9a9a9;
-        width: 31px;
-        min-width: 31px;
-        height: 31px;
+      svg {
+        width: 28px;
+        height: 28px;
+        color: #f7de0a;
+        background: black;
+        border-radius: 50%;
+      }
+    }
+  }
 
-        &.bomb {
-          background-color: red;
+  .cell-area {
+    border: 5px inset white;
+    cursor: pointer;
+
+    .row {
+      display: flex;
+
+      .cell {
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border: 4px outset white;
+        font-weight: 900;
+        font-family: "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+
+        &.open {
+          border: 1px solid #a9a9a9;
+
+          &.bomb.selected {
+            background-color: red;
+          }
+
+          &.bombCount {
+            &-1 {
+              color: blue;
+            }
+
+            &-2 {
+              color: green;
+            }
+
+            &-3 {
+              color: red;
+            }
+
+            &-4 {
+              color: #19007f;
+            }
+
+            &-5 {
+              color: #800000;
+            }
+
+            &-6 {
+              color: #337f7f;
+            }
+
+            &-7 {
+              color: black;
+            }
+
+            &-8 {
+              color: grey;
+            }
+          }
         }
-      }
 
-      &:not(.open) {
-        cursor: pointer;
+        &.flag {
+          color: red;
+        }
       }
     }
   }
