@@ -11,18 +11,18 @@ type ModesType = {
 const Modes: ModesType = {
   easy: {
     bomb: 10,
-    x: 10,
-    y: 7
+    x: 9,
+    y: 9
   },
   normal: {
     bomb: 40,
-    x: 18,
-    y: 14
+    x: 16,
+    y: 16
   },
   hard: {
     bomb: 99,
-    x: 24,
-    y: 20
+    x: 30,
+    y: 16
   }
 };
 

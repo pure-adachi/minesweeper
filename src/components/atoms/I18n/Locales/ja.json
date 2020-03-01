@@ -8,12 +8,5 @@
         "hard": "難しい"
       }
     }
-  },
-  "templates": {
-    "Board": {
-      "reset": "リセット",
-      "lose": "敗北",
-      "win": "勝利"
-    }
   }
 }

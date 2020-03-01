@@ -1,5 +1,3 @@
-import { faBomb } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import Modes from "../../../constraints/Modes";
@@ -36,7 +34,6 @@ const Top = ({ defaultMode }: IProps) => {
             </option>
           ))}
         </select>
-        <FontAwesomeIcon icon={faBomb} /> × {Modes[mode].bomb}
       </div>
 
       <Board modeInfo={Modes[mode]} />

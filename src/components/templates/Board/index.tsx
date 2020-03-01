@@ -1,9 +1,7 @@
 import classNames from "classnames";
 import React, { useCallback, useEffect, useState } from "react";
-import { FormattedMessage } from "react-intl";
 import { ModeInfoType } from "../../../constraints/Modes";
 import {
-  cellLabel,
   nextState,
   setBombCount,
   shuffle,
@@ -11,7 +9,10 @@ import {
   changedBombCellsToFlag,
   openAroundSafeCells
 } from "./Module";
-import Time from "../../atoms/Time";
+import BombCount from "../../molecules/BombCount";
+import Time from "../../molecules/Time";
+import CellLabel from "../../atoms/CellLabel";
+import ResetButton from "../../atoms/ResetButton";
 
 interface IProps {
   modeInfo: ModeInfoType;
@@ -181,35 +182,39 @@ const Board = ({ modeInfo }: IProps) => {
   };
 
   return (
-    <>
-      <div>
-        {gameStatus && (
-          <FormattedMessage id={`templates.Board.${gameStatus}`} />
-        )}
+    <div className="board">
+      <div className="game-info">
+        <BombCount count={modeInfo.bomb} />
+        <ResetButton onClick={initialBoard} gameStatus={gameStatus} />
+        <Time
+          startUnixTime={startUnixTime}
+          finishedUnixTime={finishedUnixTime}
+        />
       </div>
-      <Time startUnixTime={startUnixTime} finishedUnixTime={finishedUnixTime} />
-      <div className="buttons">
-        <button onClick={() => initialBoard()}>
-          <FormattedMessage id="templates.Board.reset" />
-        </button>
-      </div>
-      <div className="board">
+      <div className="cell-area">
         {boardSurfaces.map((row: CellType[], i: number) => (
           <div key={i} className="row">
             {row.map((cell, j) => (
               <div
                 key={j}
-                className={classNames("cell", cell.state, { bomb: cell.bomb })}
+                className={classNames("cell", cell.state, {
+                  bomb: cell.bomb && cell.state === "open",
+                  selected:
+                    currentPosition &&
+                    currentPosition.i === i &&
+                    currentPosition.j === j,
+                  [`bombCount-${cell.value}`]: cell.state === "open"
+                })}
                 onClick={() => openCell(i, j)}
                 onContextMenu={e => changeCell(e, i, j)}
               >
-                {cellLabel(cell)}
+                <CellLabel cell={cell} />
               </div>
             ))}
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 
