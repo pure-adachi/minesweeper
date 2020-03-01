@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import DigitalNumber from "../../atoms/DigitalNumber";
 
 interface IProps {
   startUnixTime: number;
@@ -16,10 +17,6 @@ const Time = ({ startUnixTime, finishedUnixTime }: IProps) => {
     return () => clearInterval(interval);
   });
 
-  if (!startUnixTime) {
-    return <>000</>;
-  }
-
   const timeStr = (time = Math.floor(now.getTime() / 1000) - startUnixTime) => {
     if (time < 0) {
       return "0";
@@ -34,11 +31,27 @@ const Time = ({ startUnixTime, finishedUnixTime }: IProps) => {
     return ("000" + time).slice(time.length);
   };
 
-  if (finishedUnixTime) {
-    return <>{zeroPaddingTime(timeStr(finishedUnixTime - startUnixTime))}</>;
-  }
+  const displayTime = () => {
+    if (!startUnixTime) {
+      return "000";
+    }
 
-  return <>{zeroPaddingTime()}</>;
+    if (finishedUnixTime) {
+      return zeroPaddingTime(timeStr(finishedUnixTime - startUnixTime));
+    }
+
+    return zeroPaddingTime();
+  };
+
+  return (
+    <div className="time-info">
+      {displayTime()
+        .split("")
+        .map((countStr, i) => (
+          <DigitalNumber key={i} numStr={countStr} />
+        ))}
+    </div>
+  );
 };
 
 export default Time;
