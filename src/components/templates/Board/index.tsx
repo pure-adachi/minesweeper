@@ -204,7 +204,8 @@ const Board = ({ modeInfo }: IProps) => {
                     currentPosition &&
                     currentPosition.i === i &&
                     currentPosition.j === j,
-                  [`bombCount-${cell.value}`]: cell.state === "open"
+                  [`bombCount-${cell.value}`]: cell.state === "open",
+                  notBomb: gameStatus && cell.state === "flag" && !cell.bomb
                 })}
                 onClick={() => openCell(i, j)}
                 onContextMenu={e => changeCell(e, i, j)}

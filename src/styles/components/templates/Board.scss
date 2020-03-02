@@ -116,6 +116,31 @@
 
         &.flag {
           color: red;
+
+          &.notBomb {
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+
+            &:before,
+            &:after {
+              content: "";
+              position: absolute;
+              top: 11px;
+              width: 22px;
+              left: 0;
+              height: 2px;
+              background: black;
+            }
+
+            &:before {
+              transform: rotate(-45deg);
+            }
+
+            &:after {
+              transform: rotate(45deg);
+            }
+          }
         }
       }
     }
