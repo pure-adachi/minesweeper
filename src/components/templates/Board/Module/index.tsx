@@ -265,3 +265,8 @@ export const openAroundSafeCells = (
 
   return newBoardSurfaces;
 };
+
+export const flagCount = (boardSurfaces: CellType[][]) =>
+  boardSurfaces
+    .map(cells => cells.filter(cell => cell.state === "flag").length)
+    .reduce((accumulator, currentValue) => accumulator + currentValue);

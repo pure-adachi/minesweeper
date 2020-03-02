@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React from "react";
 
 interface IProps {
@@ -5,8 +6,10 @@ interface IProps {
 }
 
 const DigitalNumber = ({ numStr }: IProps) => {
+  const className = `number-${numStr.replace(/-/, "minus")}`;
+
   return (
-    <div className={`digital-number number-${numStr}`}>
+    <div className={classNames("digital-number", className)}>
       <div className="section top" />
       <div className="section top-right" />
       <div className="section top-left" />
