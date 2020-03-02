@@ -7,7 +7,8 @@ import {
   shuffle,
   openedBombCells,
   changedBombCellsToFlag,
-  openAroundSafeCells
+  openAroundSafeCells,
+  flagCount
 } from "./Module";
 import BombCount from "../../molecules/BombCount";
 import Time from "../../molecules/Time";
@@ -184,7 +185,7 @@ const Board = ({ modeInfo }: IProps) => {
   return (
     <div className="board">
       <div className="game-info">
-        <BombCount count={modeInfo.bomb} />
+        <BombCount count={modeInfo.bomb - flagCount(boardSurfaces)} />
         <ResetButton onClick={initialBoard} gameStatus={gameStatus} />
         <Time
           startUnixTime={startUnixTime}
@@ -203,7 +204,8 @@ const Board = ({ modeInfo }: IProps) => {
                     currentPosition &&
                     currentPosition.i === i &&
                     currentPosition.j === j,
-                  [`bombCount-${cell.value}`]: cell.state === "open"
+                  [`bombCount-${cell.value}`]: cell.state === "open",
+                  notBomb: gameStatus && cell.state === "flag" && !cell.bomb
                 })}
                 onClick={() => openCell(i, j)}
                 onContextMenu={e => changeCell(e, i, j)}
