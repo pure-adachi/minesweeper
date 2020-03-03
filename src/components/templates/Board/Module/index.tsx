@@ -172,7 +172,7 @@ export const openAroundSafeCells = (
   let newBoardSurfaces: CellType[][] = [...boardSurfaces];
 
   // 最初は既に空いてる
-  if (state === "close") {
+  if (state !== "open") {
     newBoardSurfaces[i][j].state = "open";
   }
 
@@ -188,7 +188,7 @@ export const openAroundSafeCells = (
   if (
     j - 1 >= 0 &&
     i - 1 >= 0 &&
-    newBoardSurfaces[i - 1][j - 1].state === "close"
+    newBoardSurfaces[i - 1][j - 1].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i - 1,
@@ -196,7 +196,7 @@ export const openAroundSafeCells = (
     });
   }
   // 上
-  if (i - 1 >= 0 && newBoardSurfaces[i - 1][j].state === "close") {
+  if (i - 1 >= 0 && newBoardSurfaces[i - 1][j].state !== "open") {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i - 1,
       j
@@ -206,7 +206,7 @@ export const openAroundSafeCells = (
   if (
     j + 1 < newBoardSurfaces[i].length &&
     i - 1 >= 0 &&
-    newBoardSurfaces[i - 1][j + 1].state === "close"
+    newBoardSurfaces[i - 1][j + 1].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i - 1,
@@ -216,7 +216,7 @@ export const openAroundSafeCells = (
   // 右
   if (
     j + 1 < newBoardSurfaces[i].length &&
-    newBoardSurfaces[i][j + 1].state === "close"
+    newBoardSurfaces[i][j + 1].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i,
@@ -227,7 +227,7 @@ export const openAroundSafeCells = (
   if (
     j + 1 < newBoardSurfaces[i].length &&
     i + 1 < newBoardSurfaces.length &&
-    newBoardSurfaces[i + 1][j + 1].state === "close"
+    newBoardSurfaces[i + 1][j + 1].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i + 1,
@@ -237,7 +237,7 @@ export const openAroundSafeCells = (
   // 下
   if (
     i + 1 < newBoardSurfaces.length &&
-    newBoardSurfaces[i + 1][j].state === "close"
+    newBoardSurfaces[i + 1][j].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i + 1,
@@ -248,7 +248,7 @@ export const openAroundSafeCells = (
   if (
     j - 1 >= 0 &&
     i + 1 < newBoardSurfaces.length &&
-    newBoardSurfaces[i + 1][j - 1].state === "close"
+    newBoardSurfaces[i + 1][j - 1].state !== "open"
   ) {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i: i + 1,
@@ -256,7 +256,7 @@ export const openAroundSafeCells = (
     });
   }
   // 左
-  if (j - 1 >= 0 && newBoardSurfaces[i][j - 1].state === "close") {
+  if (j - 1 >= 0 && newBoardSurfaces[i][j - 1].state !== "open") {
     newBoardSurfaces = openAroundSafeCells(newBoardSurfaces, {
       i,
       j: j - 1
