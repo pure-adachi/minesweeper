@@ -192,7 +192,7 @@ const Board = ({ modeInfo }: IProps) => {
           finishedUnixTime={finishedUnixTime}
         />
       </div>
-      <div className="cell-area">
+      <div className={classNames("cell-area", { end: gameStatus })}>
         {boardSurfaces.map((row: CellType[], i: number) => (
           <div key={i} className="row">
             {row.map((cell, j) => (
