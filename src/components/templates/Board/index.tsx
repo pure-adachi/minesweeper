@@ -1,5 +1,8 @@
+import { faFlag, faQuestion } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { useCallback, useEffect, useState } from "react";
+import { MobileView } from "react-device-detect";
 import { ModeInfoType } from "../../../constraints/Modes";
 import {
   nextState,
@@ -46,6 +49,7 @@ const Board = ({ modeInfo }: IProps) => {
   const [gameStatus, setGameStatus] = useState();
   const [startUnixTime, setStartUnixTime] = useState();
   const [finishedUnixTime, setFinishedUnixTime] = useState();
+  const [modeInMobile, setModeInMobile] = useState();
 
   const initialBoard = useCallback(() => {
     const { x, y }: ModeInfoType = modeInfo;
@@ -64,6 +68,7 @@ const Board = ({ modeInfo }: IProps) => {
     setGameStatus(null);
     setStartUnixTime(null);
     setFinishedUnixTime(null);
+    setModeInMobile(null);
   }, [modeInfo]);
 
   useEffect(() => {
@@ -105,7 +110,7 @@ const Board = ({ modeInfo }: IProps) => {
       } else {
         const closeSafeCellRows = boardSurfaces.filter((cells: CellType[]) => {
           const safeCellsRows = cells.filter(
-            cell => !cell.bomb && cell.state === "close"
+            cell => !cell.bomb && cell.state !== "open"
           );
           return safeCellsRows.length > 0;
         });
@@ -149,20 +154,38 @@ const Board = ({ modeInfo }: IProps) => {
 
   const openCell = useCallback(
     (i: number, j: number) => {
-      if (!gameStatus) {
-        if (startPosition) {
-          if (boardSurfaces[i][j].state === "close") {
-            updateCell(i, j, "open");
-            setCurrentPosition({ i, j });
-          }
-        } else {
-          setStartPosition({ i, j });
+      if (startPosition) {
+        if (boardSurfaces[i][j].state === "close") {
+          updateCell(i, j, "open");
           setCurrentPosition({ i, j });
         }
+      } else {
+        setStartPosition({ i, j });
+        setCurrentPosition({ i, j });
       }
     },
-    [boardSurfaces, startPosition, updateCell, gameStatus]
+    [boardSurfaces, startPosition, updateCell]
   );
+
+  const handleClick = (i: number, j: number) => {
+    if (!gameStatus && boardSurfaces[i][j].state !== "open") {
+      if (modeInMobile === "flag") {
+        if (boardSurfaces[i][j].state === "flag") {
+          updateCell(i, j, "close");
+        } else {
+          updateCell(i, j, "flag");
+        }
+      } else if (modeInMobile === "hold") {
+        if (boardSurfaces[i][j].state === "onHold") {
+          updateCell(i, j, "close");
+        } else {
+          updateCell(i, j, "onHold");
+        }
+      } else {
+        openCell(i, j);
+      }
+    }
+  };
 
   useEffect(() => {
     if (started && startPosition) {
@@ -182,41 +205,73 @@ const Board = ({ modeInfo }: IProps) => {
     }
   };
 
+  const flagMode = () => {
+    if (started) {
+      setModeInMobile(modeInMobile === "flag" ? null : "flag");
+    }
+  };
+
+  const holdMode = () => {
+    if (started) {
+      setModeInMobile(modeInMobile === "hold" ? null : "hold");
+    }
+  };
+
   return (
-    <div className="board">
-      <div className="game-info">
-        <BombCount count={modeInfo.bomb - flagCount(boardSurfaces)} />
-        <ResetButton onClick={initialBoard} gameStatus={gameStatus} />
-        <Time
-          startUnixTime={startUnixTime}
-          finishedUnixTime={finishedUnixTime}
-        />
+    <>
+      <div className="board">
+        <div className="game-info">
+          <BombCount count={modeInfo.bomb - flagCount(boardSurfaces)} />
+          <ResetButton onClick={initialBoard} gameStatus={gameStatus} />
+          <Time
+            startUnixTime={startUnixTime}
+            finishedUnixTime={finishedUnixTime}
+          />
+        </div>
+        <div className={classNames("cell-area", { end: gameStatus })}>
+          {boardSurfaces.map((row: CellType[], i: number) => (
+            <div key={i} className="row">
+              {row.map((cell, j) => (
+                <div
+                  key={j}
+                  className={classNames("cell", cell.state, {
+                    bomb: cell.bomb && cell.state === "open",
+                    selected:
+                      currentPosition &&
+                      currentPosition.i === i &&
+                      currentPosition.j === j,
+                    [`bombCount-${cell.value}`]: cell.state === "open",
+                    notBomb: gameStatus && cell.state === "flag" && !cell.bomb
+                  })}
+                  onClick={() => handleClick(i, j)}
+                  onContextMenu={e => changeCell(e, i, j)}
+                >
+                  <CellLabel cell={cell} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className={classNames("cell-area", { end: gameStatus })}>
-        {boardSurfaces.map((row: CellType[], i: number) => (
-          <div key={i} className="row">
-            {row.map((cell, j) => (
-              <div
-                key={j}
-                className={classNames("cell", cell.state, {
-                  bomb: cell.bomb && cell.state === "open",
-                  selected:
-                    currentPosition &&
-                    currentPosition.i === i &&
-                    currentPosition.j === j,
-                  [`bombCount-${cell.value}`]: cell.state === "open",
-                  notBomb: gameStatus && cell.state === "flag" && !cell.bomb
-                })}
-                onClick={() => openCell(i, j)}
-                onContextMenu={e => changeCell(e, i, j)}
-              >
-                <CellLabel cell={cell} />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
+      <MobileView viewClassName="mobile-menu">
+        <div
+          className={classNames("flag-mode", {
+            active: modeInMobile === "flag"
+          })}
+          onClick={flagMode}
+        >
+          <FontAwesomeIcon icon={faFlag} />
+        </div>
+        <div
+          className={classNames("hold-mode", {
+            active: modeInMobile === "hold"
+          })}
+          onClick={holdMode}
+        >
+          <FontAwesomeIcon icon={faQuestion} />
+        </div>
+      </MobileView>
+    </>
   );
 };
 
