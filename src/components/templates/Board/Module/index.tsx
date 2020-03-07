@@ -12,27 +12,17 @@ export const shuffle = (
   cells: CellType[],
   { i, j, modeInfo: { x, y } }: IShuffleProps
 ) => {
-  let array: CellType[] = [];
+  let array: CellType[] = [...cells];
 
   // ダステンフェルドの手法(フィッシャー–イェーツのシャッフルの改良版)でシャッフル
-  while (cells.length > 0) {
-    const n = cells.length;
-    const k = Math.floor(Math.random() * n);
+  for (let index = array.length; 1 < index; index--) {
+    let k = Math.floor(Math.random() * index);
 
-    // 一番最初に選択したマスには爆弾を配置しない為の対策
-    if (i * x + j + 1 === array.length + 1) {
-      array.push(initialCell);
-    }
-
-    array.push(cells[k]);
-    cells[k] = cells[n - 1];
-    cells = cells.slice(0, n - 1);
+    [array[k], array[index - 1]] = [array[index - 1], array[k]];
   }
 
-  // 一番右下のマスを選択された場合の対策
-  if (x * y > array.length) {
-    array.push(initialCell);
-  }
+  // 一番最初に選択したマスには爆弾を配置しない為の対策
+  array.splice(i * x + j, 0, initialCell);
 
   return array;
 };
